@@ -18,6 +18,7 @@ using IPADDemo.Util;
 using System.Configuration;
 using System.Text.RegularExpressions;
 using IPADDemo.AppData;
+using Xzy.IPAD.Core;
 
 namespace IPADDemo.WeChat
 {
@@ -506,7 +507,7 @@ namespace IPADDemo.WeChat
                 string uid = UUID;
                 var mac = Mac;
 
-                var key = string.Format(@"<softtype><k3>11.0.1</k3><k9>iPad</k9><k10>2</k10><k19>58BF17B5-2D8E-4BFB-A97E-38F1226F13F8</k19><k20>{0}</k20><k21>neihe_5GHz</k21><k22>(null)</k22><k24>{1}</k24><k33>\345\276\256\344\277\241</k33><k47>1</k47><k50>1</k50><k51>com.tencent.xin</k51><k54>iPad4,4</k54></softtype>", UUID, Mac);
+                var key = string.Format($@"<softtype><k3>11.0.1</k3><k9>iPad</k9><k10>2</k10><k19>{Guid.NewGuid()}</k19><k20>{0}</k20><k21>neihe_5GHz</k21><k22>(null)</k22><k24>{1}</k24><k33>\345\276\256\344\277\241</k33><k47>1</k47><k50>1</k50><k51>com.tencent.xin</k51><k54>iPad5,5</k54></softtype>", UUID, Mac);
 
                 XzyWxApis.WXInitialize((int)WxUser1, "xzyIPAD", key, UUID);
 
@@ -689,7 +690,7 @@ namespace IPADDemo.WeChat
         /// </summary>
         /// <param name="wxid"></param>
         /// <param name="content"></param>
-        public unsafe void Wx_SendMsg(string wxid, string content)
+        public unsafe string Wx_SendMsg(string wxid, string content)
         {
             WxDelegate.show(string.Format("发送文字： {0}", content));
             content = content.Replace(" ", "\r\n");
@@ -699,6 +700,7 @@ namespace IPADDemo.WeChat
                 var datas = MarshalNativeToManaged((IntPtr)msgPtr);
                 var str = datas.ToString();
                 Wx_ReleaseEX(ref msgPtr);
+                return str;
             }
         }
 
@@ -1330,7 +1332,25 @@ namespace IPADDemo.WeChat
             var result = "";
             fixed (int* WxUser1 = &pointerWxUser, msgptr1 = &msgPtr)
             {
-                XzyWxApis.WXSnsComment(pointerWxUser, this.wxUser.wxid, snsid, content, replyid, (int)msgptr1);
+                msgPtr = ESnsComment(pointerWxUser, this.wxUser.wxid, snsid, content, replyid);
+                var datas = MarshalNativeToManaged((IntPtr)msgPtr);
+                result = datas.ToString();
+                Wx_ReleaseEX(ref msgPtr);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 查看朋友圈 ID第一次传空
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public unsafe string Wx_SnsTimeline(string id)
+        {
+            var result = "";
+            fixed (int* WxUser1 = &pointerWxUser, msgptr1 = &msgPtr)
+            {
+                XzyWxApis.WXSnsTimeline(pointerWxUser, id, (int)msgptr1);
                 var datas = MarshalNativeToManaged((IntPtr)msgPtr);
                 result = datas.ToString();
                 Wx_ReleaseEX(ref msgPtr);
@@ -1621,6 +1641,119 @@ namespace IPADDemo.WeChat
         }
 
         /// <summary>
+        /// 设置微信id
+        /// </summary>
+        /// <param name="wxid"></param>
+        /// <returns></returns>
+        public unsafe string Wx_SetWeChatID(string wxid)
+        {
+            var result = "";
+            fixed (int* WxUser1 = &pointerWxUser, msgptr1 = &msgPtr)
+            {
+                XzyWxApis.WXSetWeChatID(pointerWxUser, wxid,(int)msgptr1);
+                var datas = MarshalNativeToManaged((IntPtr)msgPtr);
+                result = datas.ToString();
+                Wx_ReleaseEX(ref msgPtr);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 获取本地二维码信息
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public unsafe string Wx_QRCodeDecode(string path)
+        {
+            var result = "";
+            fixed (int* WxUser1 = &pointerWxUser, msgptr1 = &msgPtr)
+            {
+                XzyWxApis.WXQRCodeDecode(pointerWxUser, path, (int)msgptr1);
+                var datas = MarshalNativeToManaged((IntPtr)msgPtr);
+                result = datas.ToString();
+                Wx_ReleaseEX(ref msgPtr);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 获取其他设备登陆请求
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        public unsafe string Wx_ExtDeviceLoginGet(string url)
+        {
+            var result = "";
+            fixed (int* WxUser1 = &pointerWxUser, msgptr1 = &msgPtr)
+            {
+                XzyWxApis.WXExtDeviceLoginGet(pointerWxUser, url, (int)msgptr1);
+                var datas = MarshalNativeToManaged((IntPtr)msgPtr);
+                result = datas.ToString();
+                Wx_ReleaseEX(ref msgPtr);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 确认其他设备登陆请求
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        public unsafe string Wx_ExtDeviceLoginOK(string url)
+        {
+            var result = "";
+            fixed (int* WxUser1 = &pointerWxUser, msgptr1 = &msgPtr)
+            {
+                XzyWxApis.WXExtDeviceLoginOK(pointerWxUser, url, (int)msgptr1);
+                var datas = MarshalNativeToManaged((IntPtr)msgPtr);
+                result = datas.ToString();
+                Wx_ReleaseEX(ref msgPtr);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 设置用户资料
+        /// </summary>
+        /// <param name="nick_name"></param>
+        /// <param name="unsigned"></param>
+        /// <param name="sex"></param>
+        /// <param name="country"></param>
+        /// <param name="provincia"></param>
+        /// <param name="city"></param>
+        /// <returns></returns>
+        public unsafe string Wx_SetUserInfo(string nick_name, string unsigned, int sex, string country, string provincia, string city)
+        {
+            var result = "";
+            fixed (int* WxUser1 = &pointerWxUser, msgptr1 = &msgPtr)
+            {
+                XzyWxApis.WXSetUserInfo(pointerWxUser, nick_name, unsigned,sex,country,provincia,city,(int)msgptr1);
+                var datas = MarshalNativeToManaged((IntPtr)msgPtr);
+                result = datas.ToString();
+                Wx_ReleaseEX(ref msgPtr);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 搜索用户信息
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public unsafe string Wx_SearchContact(string user)
+        {
+            var result = "";
+            fixed (int* WxUser1 = &pointerWxUser, msgptr1 = &msgPtr)
+            {
+                XzyWxApis.WXSearchContact(pointerWxUser, user,(int)msgptr1);
+                var datas = MarshalNativeToManaged((IntPtr)msgPtr);
+                result = datas.ToString();
+                Wx_ReleaseEX(ref msgPtr);
+            }
+            return result;
+        }
+
+        /// <summary>
         /// 获取62数据
         /// </summary>
         /// <returns></returns>
@@ -1681,12 +1814,57 @@ namespace IPADDemo.WeChat
             return result;
         }
 
+        /// <summary>
+        /// 获取公众号菜单
+        /// </summary>
+        /// <param name="gzhid"></param>
+        /// <returns></returns>
         public unsafe string GetSubscriptionInfo(string gzhid)
         {
             var result = "";
             fixed (int* WxUser1 = &pointerWxUser, msgptr1 = &msgPtr)
             {
                 XzyWxApis.WXGetSubscriptionInfo(pointerWxUser, gzhid, (int)msgptr1);
+                var datas = MarshalNativeToManaged((IntPtr)msgPtr);
+                result = datas.ToString();
+                Wx_ReleaseEX(ref msgPtr);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 执行公众号菜单
+        /// </summary>
+        /// <param name="wxid">公众号用户名gh* 开头的</param>
+        /// <param name="uin">通过WXGetSubscriptionInfo获取</param>
+        /// <param name="key">通过WXGetSubscriptionInfo获取</param>
+        /// <returns></returns>
+        public unsafe string Wx_SubscriptionCommand(string wxid,uint uin,string key)
+        {
+            var result = "";
+            fixed (int* WxUser1 = &pointerWxUser, msgptr1 = &msgPtr)
+            {
+                XzyWxApis.WXSubscriptionCommand(pointerWxUser, wxid,uin,key ,(int)msgptr1);
+                var datas = MarshalNativeToManaged((IntPtr)msgPtr);
+                result = datas.ToString();
+                Wx_ReleaseEX(ref msgPtr);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 阅读链接
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="uin"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public unsafe string Wx_RequestUrl(string url, string uin, string key)
+        {
+            var result = "";
+            fixed (int* WxUser1 = &pointerWxUser, msgptr1 = &msgPtr)
+            {
+                XzyWxApis.WXRequestUrl(pointerWxUser, url, key, uin, (int)msgptr1);
                 var datas = MarshalNativeToManaged((IntPtr)msgPtr);
                 result = datas.ToString();
                 Wx_ReleaseEX(ref msgPtr);
@@ -2105,7 +2283,7 @@ namespace IPADDemo.WeChat
         public static extern int EShareCarde(int wxuser, string wxid, string fromwxid, string caption);
 
         [DllImport("EUtils.dll")]
-        public static extern int ESnsComment(int wxuser, string wxid, string snsid, string context);
+        public static extern int ESnsComment(int wxuser, string wxid, string snsid, string context,int replyid);
 
         [DllImport("EUtils.dll")]
         public static extern int EAddUser(int wxuser, string v1, string v2, int type,string context);

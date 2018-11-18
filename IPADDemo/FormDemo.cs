@@ -78,7 +78,7 @@ namespace IPADDemo
 
         private void button1_Click(object sender, EventArgs e)
         {
-            weChatThread.Wx_SendMsg(txt_msgWxid.Text, txt_msgText.Text);
+            var res=weChatThread.Wx_SendMsg(txt_msgWxid.Text, txt_msgText.Text);
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -294,6 +294,16 @@ namespace IPADDemo
             txt_gzhlog.Text = weChatThread.GetSubscriptionInfo(txt_gzhid.Text);
         }
 
+        private void button40_Click(object sender, EventArgs e)
+        {
+            txt_gzhlog.Text = weChatThread.Wx_SubscriptionCommand(txt_gzhid.Text, uint.Parse(txt_gzhUin.Text), txt_gzhKey.Text);
+        }
+
+        private void button45_Click(object sender, EventArgs e)
+        {
+            txt_gzhlog.Text = weChatThread.Wx_RequestUrl(txt_gzhUrl.Text, txt_gzhUin.Text, txt_gzhKey.Text);
+        }
+
         private void button25_Click(object sender, EventArgs e)
         {
             string str = weChatThread.Wx_GetContactLabelList();
@@ -335,17 +345,28 @@ namespace IPADDemo
         private void button32_Click(object sender, EventArgs e)
         {
             var res = weChatThread.Wx_SnsUserPage(txt_snswxid.Text,"");
+            txt_snsLog.Text = res.ConvertToString();
         }
 
         private void button33_Click(object sender, EventArgs e)
         {
             var res = weChatThread.Wx_SnsObjectDetail(txt_snsId.Text);
+            txt_snsLog.Text = res.ConvertToString();
         }
 
         private void button34_Click(object sender, EventArgs e)
         {
             var res = weChatThread.Wx_SnsComment(txt_snsId.Text, Encoding.Default.GetString(Encoding.UTF8.GetBytes(txt_snsContext.Text)), txt_snsPlId.Text.ConvertToInt32());
+            txt_snsLog.Text = res.ConvertToString();
         }
+
+
+        private void button48_Click(object sender, EventArgs e)
+        {
+            var res = weChatThread.Wx_SnsTimeline("");
+            txt_snsLog.Text = res.ConvertToString();
+        }
+
 
         private void button35_Click(object sender, EventArgs e)
         {
@@ -362,6 +383,51 @@ namespace IPADDemo
             var res = weChatThread.Wx_DeleteUser(txt_friendwxid.Text);
         }
 
-        
+        private void button41_Click(object sender, EventArgs e)
+        {
+            var res = weChatThread.Wx_SetWeChatID(txt_setWxid.Text);
+        }
+
+        private void button42_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+
+            ofd.Filter = "二维码文件 |*.jpg;*.png";
+            ofd.ValidateNames = true;
+            ofd.CheckPathExists = true;
+            ofd.CheckFileExists = true;
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                string FileName = ofd.FileName;
+                var res = weChatThread.Wx_QRCodeDecode(FileName);
+                txt_qrcodeLog.Text = res.ConvertToString();
+            }
+        }
+
+        private void button43_Click(object sender, EventArgs e)
+        {
+            var res = weChatThread.Wx_ExtDeviceLoginGet(txt_orderUrl.Text);
+            txt_qrcodeLog.Text = res.ConvertToString();
+        }
+
+        private void button44_Click(object sender, EventArgs e)
+        {
+            var res = weChatThread.Wx_ExtDeviceLoginOK(txt_orderUrl.Text);
+            txt_qrcodeLog.Text = res.ConvertToString();
+        }
+
+        private void button46_Click(object sender, EventArgs e)
+        {
+            var res = weChatThread.Wx_SetUserInfo(txt_setNickName.Text,txt_setSign.Text,txt_setSex.Text.ConvertToInt32(),txt_setCountry.Text,txt_setProvincia.Text,txt_setCity.Text);
+
+        }
+
+        private void button47_Click(object sender, EventArgs e)
+        {
+            var res = weChatThread.Wx_SearchContact(txt_addUserInfo.Text);
+            txt_positionReturn.Text = res.ToString();
+        }
+
+       
     }
 }

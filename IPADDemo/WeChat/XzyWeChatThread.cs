@@ -704,33 +704,49 @@ namespace IPADDemo.WeChat
             }
         }
 
+        /// <summary>
+        /// 群发消息
+        /// </summary>
+        /// <param name="wxid"></param>
+        /// <param name="content"></param>
+        /// <returns></returns>
+        public unsafe string Wx_MassMessage(string wxid, string content)
+        {
+            WxDelegate.show(string.Format("发送文字： {0}", content));
+            content = content.Replace(" ", "\r\n");
+            fixed (int* WxUser1 = &pointerWxUser, msgptr1 = &msgPtr)
+            {
+                XzyWxApis.WXMassMessage(pointerWxUser, wxid, content, (int)msgptr1);
+                var datas = MarshalNativeToManaged((IntPtr)msgPtr);
+                var str = datas.ToString();
+                Wx_ReleaseEX(ref msgPtr);
+                return str;
+            }
+        }
+
         private int wx_imptr;
         /// <summary>
         /// 发消息 - 图片
         /// </summary>
         /// <param name="wxid"></param>
         /// <param name="imgpath"></param>
-        public unsafe void Wx_SendImg(string wxid, string imgpath)
+        public unsafe string Wx_SendImg(string wxid, string imgpath)
         {
             WxDelegate.show(string.Format("发送图片 ：{0}", imgpath));
 
             fixed (int* WxUser1 = &pointerWxUser, imptr1 = &wx_imptr)
             {
-                try
-                {
-                    Image _image = Image.FromStream(WebRequest.Create(imgpath).GetResponse().GetResponseStream());
-                    //把文件读取到字节数组
-                    byte[] data = this.ImageToBytes(_image);
-                    if (data.Length > 0)
-                    {
-                        XzyWxApis.WXSendImage(pointerWxUser, wxid, data, data.Length, (int)imptr1);
-                        var datas = MarshalNativeToManaged((IntPtr)wx_imptr);
-                        var str = datas.ToString();
-                        Wx_ReleaseEX(ref wx_imptr);
-                    }
-                    _image = null;
-                }
-                catch { }
+
+                Image _image = Image.FromStream(WebRequest.Create(imgpath).GetResponse().GetResponseStream());
+                //把文件读取到字节数组
+                byte[] data = this.ImageToBytes(_image);
+
+                XzyWxApis.WXSendImage(pointerWxUser, wxid, data, data.Length, (int)imptr1);
+                var datas = MarshalNativeToManaged((IntPtr)wx_imptr);
+                var str = datas.ToString();
+                Wx_ReleaseEX(ref wx_imptr);
+                _image = null;
+                return str;
             }
         }
 
@@ -780,7 +796,7 @@ namespace IPADDemo.WeChat
             fixed (int* WxUser1 = &pointerWxUser, msgptr1 = &msgPtr)
             {
 
-                msgPtr = EShareCarde(pointerWxUser, user, wxid, title);
+                msgPtr = EUtils.EShareCarde(pointerWxUser, user, wxid, title);
                 var datas = MarshalNativeToManaged((IntPtr)msgPtr);
                 result = datas.ToString();
                 Wx_ReleaseEX(ref wx_imptr);
@@ -1206,7 +1222,7 @@ namespace IPADDemo.WeChat
             {
                 try
                 {
-                    msgPtr = ESetChatroomName(pointerWxUser, groupid, content);
+                    msgPtr = EUtils.ESetChatroomName(pointerWxUser, groupid, content);
                     var datas = MarshalNativeToManaged((IntPtr)msgPtr);
                     result = datas.ToString();
                     Wx_ReleaseEX(ref msgPtr);
@@ -1238,7 +1254,7 @@ namespace IPADDemo.WeChat
                     //Wx_ReleaseEX(ref msgPtr);
 
                     //方案二
-                    msgPtr = ESetChatroomAnnouncement(pointerWxUser, groupid, content);
+                    msgPtr = EUtils.ESetChatroomAnnouncement(pointerWxUser, groupid, content);
                     var datas = MarshalNativeToManaged((IntPtr)msgPtr);
                     result = datas.ToString();
                     Wx_ReleaseEX(ref msgPtr);
@@ -1332,7 +1348,7 @@ namespace IPADDemo.WeChat
             var result = "";
             fixed (int* WxUser1 = &pointerWxUser, msgptr1 = &msgPtr)
             {
-                msgPtr = ESnsComment(pointerWxUser, this.wxUser.wxid, snsid, content, replyid);
+                msgPtr = EUtils.ESnsComment(pointerWxUser, this.wxUser.wxid, snsid, content, replyid);
                 var datas = MarshalNativeToManaged((IntPtr)msgPtr);
                 result = datas.ToString();
                 Wx_ReleaseEX(ref msgPtr);
@@ -1425,7 +1441,7 @@ namespace IPADDemo.WeChat
         /// </summary>
         /// <param name="wxid"></param>
         /// <param name="content"></param>
-        public unsafe void Wx_SendMoment(string content, List<string> imagelist)
+        public unsafe string Wx_SendMoment(string content, List<string> imagelist)
         {
             fixed (int* WxUser1 = &pointerWxUser, msgptr1 = &msgPtr)
             {
@@ -1443,23 +1459,26 @@ namespace IPADDemo.WeChat
                         imagestr += String.Format(App.PYQContentImage, upload.big_url, upload.small_url, upload.size, 100, 100);
                     }
                     var result = String.Format(App.PYQContent, wxUser.wxid, imagestr);
-                    msgPtr = ESendSNSImage(pointerWxUser, result, content);
+                    msgPtr = EUtils.ESendSNSImage(pointerWxUser, result, content);
                     var datas = MarshalNativeToManaged((IntPtr)msgPtr);
                     result = datas.ToString();
                     Wx_ReleaseEX(ref msgPtr);
+                    return result;
                 }
+                return "参数错误";
             }
         }
 
-        public unsafe void Wx_SendMoment(string content)
+        public unsafe string Wx_SendMoment(string content)
         {
             var result = "";
             fixed (int* WxUser1 = &pointerWxUser, msgptr1 = &msgPtr)
             {
-                msgPtr = ESendSNS(pointerWxUser, content);
+                msgPtr = EUtils.ESendSNS(pointerWxUser, content);
                 var datas = MarshalNativeToManaged((IntPtr)msgPtr);
                 result = datas.ToString();
                 Wx_ReleaseEX(ref msgPtr);
+                return result;
             }
         }
 
@@ -1597,7 +1616,7 @@ namespace IPADDemo.WeChat
             var result = "";
             fixed (int* WxUser1 = &pointerWxUser, msgptr1 = &msgPtr)
             {
-                msgPtr = ESetUserRemark(pointerWxUser, wxid, context);
+                msgPtr = EUtils.ESetUserRemark(pointerWxUser, wxid, context);
                 var datas = MarshalNativeToManaged((IntPtr)msgPtr);
                 result = datas.ToString();
                 Wx_ReleaseEX(ref msgPtr);
@@ -1615,7 +1634,7 @@ namespace IPADDemo.WeChat
             var result = "";
             fixed (int* WxUser1 = &pointerWxUser, msgptr1 = &msgPtr)
             {
-                msgPtr = EDeleteUser(pointerWxUser, wxid);
+                XzyWxApis.WXDeleteUser(pointerWxUser,wxid, (int)msgptr1);
                 var datas = MarshalNativeToManaged((IntPtr)msgPtr);
                 result = datas.ToString();
                 Wx_ReleaseEX(ref msgPtr);
@@ -1815,6 +1834,24 @@ namespace IPADDemo.WeChat
         }
 
         /// <summary>
+        /// 公众号搜索
+        /// </summary>
+        /// <param name="search"></param>
+        /// <returns></returns>
+        public unsafe string Wx_WebSearch(string search)
+        {
+            var result = "";
+            fixed (int* WxUser1 = &pointerWxUser, msgptr1 = &msgPtr)
+            {
+                XzyWxApis.WXWebSearch(pointerWxUser, search, (int)msgptr1);
+                var datas = MarshalNativeToManaged((IntPtr)msgPtr);
+                result = datas.ToString();
+                Wx_ReleaseEX(ref msgPtr);
+            }
+            return result;
+        }
+
+        /// <summary>
         /// 获取公众号菜单
         /// </summary>
         /// <param name="gzhid"></param>
@@ -1918,7 +1955,7 @@ namespace IPADDemo.WeChat
             var result = "";
             fixed (int* WxUser1 = &pointerWxUser, msgptr1 = &msgPtr)
             {
-                msgPtr = EAddContactLabel(pointerWxUser, context);
+                msgPtr = EUtils.EAddContactLabel(pointerWxUser, context);
                 var datas = MarshalNativeToManaged((IntPtr)msgPtr);
                 result = datas.ToString();
                 Wx_ReleaseEX(ref msgPtr);
@@ -2266,40 +2303,5 @@ namespace IPADDemo.WeChat
 
         #endregion
 
-        #region 易语言 Utils 处理中文乱码
-        [DllImport("EUtils.dll")]
-        public static extern int ESendSNS(int wxuser, string str);
-
-        [DllImport("EUtils.dll")]
-        public static extern int ESendSNSImage(int wxuser, string xml, string context);
-
-        [DllImport("EUtils.dll")]
-        public static extern int ESetChatroomAnnouncement(int wxuser, string wxid, string context);
-
-        [DllImport("EUtils.dll")]
-        public static extern int ESetChatroomName(int wxuser, string wxid, string name);
-
-        [DllImport("EUtils.dll")]
-        public static extern int EShareCarde(int wxuser, string wxid, string fromwxid, string caption);
-
-        [DllImport("EUtils.dll")]
-        public static extern int ESnsComment(int wxuser, string wxid, string snsid, string context,int replyid);
-
-        [DllImport("EUtils.dll")]
-        public static extern int EAddUser(int wxuser, string v1, string v2, int type,string context);
-
-        [DllImport("EUtils.dll")]
-        public static extern int ESetUserRemark(int wxuser, string wxid, string context);
-
-        [DllImport("EUtils.dll")]
-        public static extern int ESayHello(int wxuser, string v1, string context);
-
-        [DllImport("EUtils.dll")]
-        public static extern int EAddContactLabel(int wxuser, string context);
-
-        [DllImport("EUtils.dll")]
-        public static extern int EDeleteUser(int wxuser, string wxid);
-
-        #endregion
     }
 }
